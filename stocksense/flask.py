@@ -1239,12 +1239,11 @@ def main_app():
         profit_emoji = "📈" if profit_loss >= 0 else "📉"
         available_stocks = user_data["portfolio"].get(symbol, {}).get("quantity", 0)
 
-        st.markdown('<div class="glass">', unsafe_allow_html=True)
+  
         st.markdown('<h3>Current Price 📈</h3>', unsafe_allow_html=True)
         st.markdown(f'<p style="color: #00ff00;">${current_price:.2f}</p>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="glass">', unsafe_allow_html=True)
         st.markdown('<h3>Trade Summary 💰</h3>', unsafe_allow_html=True)
         st.markdown(f'<p>Bought Price 🛒: ${bought_price:.2f}</p>', unsafe_allow_html=True)
         st.markdown(f'<p>Current Price 📊: ${current_price:.2f}</p>', unsafe_allow_html=True)
@@ -1252,12 +1251,12 @@ def main_app():
         st.markdown(f'<p style="color: {profit_color};">Profit/Loss {profit_emoji}: ${profit_loss:.2f}</p>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="glass">', unsafe_allow_html=True)
+        
         st.markdown('<h3>Available Stocks 📜</h3>', unsafe_allow_html=True)
         st.markdown(f'<p>{symbol}: {available_stocks} shares</p>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="glass">', unsafe_allow_html=True)
+      
         st.markdown('<h3>Trade 🛠️</h3>', unsafe_allow_html=True)
         quantity = st.number_input("Quantity 🔢", min_value=1, value=1, key="trade_qty")
         col1, col2 = st.columns(2)
@@ -1394,7 +1393,7 @@ def main_app():
         profit_color = "#00ff00" if stats["net_profit_loss"] >= 0 else "#ff0000"
         profit_emoji = "📈" if stats["net_profit_loss"] >= 0 else "📉"
 
-        st.markdown('<div class="glass">', unsafe_allow_html=True)
+      
         st.markdown('<h3>Account Summary 📋</h3>', unsafe_allow_html=True)
         st.markdown(f'<p>Cash Balance 💵: ${stats["cash_balance"]:.2f}</p>', unsafe_allow_html=True)
         st.markdown(f'<p>Portfolio Value 📈: ${stats["portfolio_value"]:.2f}</p>', unsafe_allow_html=True)
@@ -1404,7 +1403,7 @@ def main_app():
         st.markdown('</div>', unsafe_allow_html=True)
 
         if stats["breakdown"]:
-            st.markdown('<div class="glass">', unsafe_allow_html=True)
+            
             st.markdown('<h3>Portfolio Breakdown 📊</h3>', unsafe_allow_html=True)
             breakdown_df = pd.DataFrame(stats["breakdown"])
             breakdown_df["profit_loss"] = breakdown_df["profit_loss"].apply(lambda x: f"${x:.2f}")
@@ -1414,7 +1413,7 @@ def main_app():
             st.table(breakdown_df[["symbol", "quantity", "avg_price", "current_price", "value", "profit_loss"]])
             st.markdown('</div>', unsafe_allow_html=True)
 
-            st.markdown('<div class="glass">', unsafe_allow_html=True)
+          
             st.markdown('<h3>Portfolio Allocation 📈</h3>', unsafe_allow_html=True)
             fig = px.pie(
                 breakdown_df,
@@ -1438,7 +1437,7 @@ def main_app():
                 st.success(f"{new_symbol} added to watchlist! ✅")
 
         if user_data["watchlist"]:
-            st.markdown('<div class="glass">', unsafe_allow_html=True)
+           
             st.markdown('<h3>Your Watchlist 📋</h3>', unsafe_allow_html=True)
             watchlist_data = []
             for symbol in user_data["watchlist"]:
@@ -1484,7 +1483,7 @@ def main_app():
     elif choice == "History 📜":
         st.title("Transaction History 📜")
         if user_data["transactions"]:
-            st.markdown('<div class="glass">', unsafe_allow_html=True)
+         
             st.markdown('<h3>Your Transactions 📋</h3>', unsafe_allow_html=True)
             transactions_df = pd.DataFrame(user_data["transactions"])
             transactions_df["time"] = pd.to_datetime(transactions_df["time"])
