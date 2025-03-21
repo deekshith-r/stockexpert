@@ -104,13 +104,12 @@ def update_candle_data(symbol):
     data = get_stock_data(symbol, period="1d", interval="1m")
     if not data.empty:
         latest_candle = data.iloc[-1]
-        volatility = (data["high"].max() - data["low"].min()) * 0.1 or 1.0  # Avoid division by zero
+        volatility = (data["high"].max() - data["low"].min()) * 0.1 or 1.0
         new_open = latest_candle["close"]
     else:
         new_open = st.session_state.last_price.get(symbol, 100.0)
         volatility = 1.0
 
-    # Simulate price fluctuation every second
     new_high = new_open + np.random.uniform(0, volatility)
     new_low = new_open - np.random.uniform(0, volatility)
     new_close = new_open + np.random.uniform(-volatility * 0.5, volatility * 0.5)
@@ -127,7 +126,7 @@ def update_candle_data(symbol):
     )
     if len(st.session_state.candle_data) > 60:
         st.session_state.candle_data = st.session_state.candle_data.iloc[-60:]
-    st.session_state.last_price[symbol] = new_close  # Update current price for fluctuation
+    st.session_state.last_price[symbol] = new_close
 
 # Login Page
 def login():
@@ -177,7 +176,6 @@ def login():
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
         }
-       
         @keyframes fadeIn {
             0% { opacity: 0; transform: translateY(-20px); }
             100% { opacity: 1; transform: translateY(0); }
@@ -1233,7 +1231,6 @@ def main_app():
                 st.session_state.last_update_time = 0
                 st.warning(f"Stopped trading {symbol} 🛑")
 
-        # Update current price dynamically when trading is active
         current_price = st.session_state.last_price.get(symbol, get_stock_data(symbol).iloc[-1]["close"])
         bought_price = user_data["portfolio"].get(symbol, {}).get("avg_price", 0.0)
         sold_price = st.session_state.sold_price.get(symbol, 0.0)
@@ -1242,12 +1239,12 @@ def main_app():
         profit_emoji = "📈" if profit_loss >= 0 else "📉"
         available_stocks = user_data["portfolio"].get(symbol, {}).get("quantity", 0)
 
-        
+        st.markdown('<div class="glass">', unsafe_allow_html=True)
         st.markdown('<h3>Current Price 📈</h3>', unsafe_allow_html=True)
         st.markdown(f'<p style="color: #00ff00;">${current_price:.2f}</p>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        
+        st.markdown('<div class="glass">', unsafe_allow_html=True)
         st.markdown('<h3>Trade Summary 💰</h3>', unsafe_allow_html=True)
         st.markdown(f'<p>Bought Price 🛒: ${bought_price:.2f}</p>', unsafe_allow_html=True)
         st.markdown(f'<p>Current Price 📊: ${current_price:.2f}</p>', unsafe_allow_html=True)
@@ -1255,12 +1252,12 @@ def main_app():
         st.markdown(f'<p style="color: {profit_color};">Profit/Loss {profit_emoji}: ${profit_loss:.2f}</p>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-
+        st.markdown('<div class="glass">', unsafe_allow_html=True)
         st.markdown('<h3>Available Stocks 📜</h3>', unsafe_allow_html=True)
         st.markdown(f'<p>{symbol}: {available_stocks} shares</p>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-
+        st.markdown('<div class="glass">', unsafe_allow_html=True)
         st.markdown('<h3>Trade 🛠️</h3>', unsafe_allow_html=True)
         quantity = st.number_input("Quantity 🔢", min_value=1, value=1, key="trade_qty")
         col1, col2 = st.columns(2)
@@ -1314,50 +1311,82 @@ def main_app():
                     st.error(f"Not enough shares to sell! You have {user_data['portfolio'].get(symbol, {}).get('quantity', 0)} shares of {symbol}. 🚫")
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Real-time candlestick chart with 1-second updates
+        # Real-time candlestick chart with controlled updates
         if st.session_state.trading_active or not st.session_state.candle_data.empty:
-            if st.session_state.trading_active:
+            chart_placeholder = st.empty()
+            status_placeholder = st.empty()
+
+            while st.session_state.trading_active:
                 current_time = time.time()
-                if current_time - st.session_state.last_update_time >= 1:  # Update every 1 second
+                if current_time - st.session_state.last_update_time >= 1:
                     update_candle_data(symbol)
                     st.session_state.last_update_time = current_time
-                    st.write(f"Price updated to ${st.session_state.last_price[symbol]:.2f} at {datetime.now().strftime('%H:%M:%S')} ⏰")
 
-            fig = go.Figure(data=[go.Candlestick(
-                x=st.session_state.candle_data["time"],
-                open=st.session_state.candle_data["open"],
-                high=st.session_state.candle_data["high"],
-                low=st.session_state.candle_data["low"],
-                close=st.session_state.candle_data["close"],
-                increasing_line_color='green',
-                decreasing_line_color='red'
-            )])
-            fig.update_layout(
-                title=f"{symbol} ({company_name}) Candlestick Chart 📉",
-                xaxis_title="Time ⏰",
-                yaxis_title="Price 💲",
-                xaxis_rangeslider_visible=True,
-                height=600,
-                template="plotly_dark",
-                showlegend=False,
-                xaxis=dict(
-                    tickformat="%H:%M:%S",
-                    tickangle=45,
-                    nticks=10
-                ),
-                margin=dict(l=50, r=50, t=50, b=50)
-            )
-            fig.update_traces(
-                increasing_fillcolor='green',
-                decreasing_fillcolor='red',
-                selector=dict(type='candlestick')
-            )
-            st.plotly_chart(fig, use_container_width=True)
+                    fig = go.Figure(data=[go.Candlestick(
+                        x=st.session_state.candle_data["time"],
+                        open=st.session_state.candle_data["open"],
+                        high=st.session_state.candle_data["high"],
+                        low=st.session_state.candle_data["low"],
+                        close=st.session_state.candle_data["close"],
+                        increasing_line_color='green',
+                        decreasing_line_color='red'
+                    )])
+                    fig.update_layout(
+                        title=f"{symbol} ({company_name}) Candlestick Chart 📉",
+                        xaxis_title="Time ⏰",
+                        yaxis_title="Price 💲",
+                        xaxis_rangeslider_visible=True,
+                        height=600,
+                        template="plotly_dark",
+                        showlegend=False,
+                        xaxis=dict(
+                            tickformat="%H:%M:%S",
+                            tickangle=45,
+                            nticks=10
+                        ),
+                        margin=dict(l=50, r=50, t=50, b=50)
+                    )
+                    fig.update_traces(
+                        increasing_fillcolor='green',
+                        decreasing_fillcolor='red',
+                        selector=dict(type='candlestick')
+                    )
+                    chart_placeholder.plotly_chart(fig, use_container_width=True)
+                    status_placeholder.write(f"Price updated to ${st.session_state.last_price[symbol]:.2f} at {datetime.now().strftime('%H:%M:%S')} ⏰")
+                time.sleep(0.1)  # Reduce CPU usage
 
-            # Trigger rerun every second when trading is active
-            if st.session_state.trading_active:
-                time.sleep(1)  # Wait 1 second before rerunning
-                st.experimental_rerun()
+            # Display static chart when trading is stopped
+            if not st.session_state.trading_active and not st.session_state.candle_data.empty:
+                fig = go.Figure(data=[go.Candlestick(
+                    x=st.session_state.candle_data["time"],
+                    open=st.session_state.candle_data["open"],
+                    high=st.session_state.candle_data["high"],
+                    low=st.session_state.candle_data["low"],
+                    close=st.session_state.candle_data["close"],
+                    increasing_line_color='green',
+                    decreasing_line_color='red'
+                )])
+                fig.update_layout(
+                    title=f"{symbol} ({company_name}) Candlestick Chart 📉",
+                    xaxis_title="Time ⏰",
+                    yaxis_title="Price 💲",
+                    xaxis_rangeslider_visible=True,
+                    height=600,
+                    template="plotly_dark",
+                    showlegend=False,
+                    xaxis=dict(
+                        tickformat="%H:%M:%S",
+                        tickangle=45,
+                        nticks=10
+                    ),
+                    margin=dict(l=50, r=50, t=50, b=50)
+                )
+                fig.update_traces(
+                    increasing_fillcolor='green',
+                    decreasing_fillcolor='red',
+                    selector=dict(type='candlestick')
+                )
+                chart_placeholder.plotly_chart(fig, use_container_width=True)
 
     elif choice == "Portfolio 💼":
         st.title("Portfolio 💼")
@@ -1365,6 +1394,7 @@ def main_app():
         profit_color = "#00ff00" if stats["net_profit_loss"] >= 0 else "#ff0000"
         profit_emoji = "📈" if stats["net_profit_loss"] >= 0 else "📉"
 
+        st.markdown('<div class="glass">', unsafe_allow_html=True)
         st.markdown('<h3>Account Summary 📋</h3>', unsafe_allow_html=True)
         st.markdown(f'<p>Cash Balance 💵: ${stats["cash_balance"]:.2f}</p>', unsafe_allow_html=True)
         st.markdown(f'<p>Portfolio Value 📈: ${stats["portfolio_value"]:.2f}</p>', unsafe_allow_html=True)
@@ -1374,7 +1404,7 @@ def main_app():
         st.markdown('</div>', unsafe_allow_html=True)
 
         if stats["breakdown"]:
-     
+            st.markdown('<div class="glass">', unsafe_allow_html=True)
             st.markdown('<h3>Portfolio Breakdown 📊</h3>', unsafe_allow_html=True)
             breakdown_df = pd.DataFrame(stats["breakdown"])
             breakdown_df["profit_loss"] = breakdown_df["profit_loss"].apply(lambda x: f"${x:.2f}")
@@ -1384,7 +1414,7 @@ def main_app():
             st.table(breakdown_df[["symbol", "quantity", "avg_price", "current_price", "value", "profit_loss"]])
             st.markdown('</div>', unsafe_allow_html=True)
 
-           
+            st.markdown('<div class="glass">', unsafe_allow_html=True)
             st.markdown('<h3>Portfolio Allocation 📈</h3>', unsafe_allow_html=True)
             fig = px.pie(
                 breakdown_df,
@@ -1408,7 +1438,7 @@ def main_app():
                 st.success(f"{new_symbol} added to watchlist! ✅")
 
         if user_data["watchlist"]:
-            
+            st.markdown('<div class="glass">', unsafe_allow_html=True)
             st.markdown('<h3>Your Watchlist 📋</h3>', unsafe_allow_html=True)
             watchlist_data = []
             for symbol in user_data["watchlist"]:
@@ -1454,7 +1484,7 @@ def main_app():
     elif choice == "History 📜":
         st.title("Transaction History 📜")
         if user_data["transactions"]:
-         
+            st.markdown('<div class="glass">', unsafe_allow_html=True)
             st.markdown('<h3>Your Transactions 📋</h3>', unsafe_allow_html=True)
             transactions_df = pd.DataFrame(user_data["transactions"])
             transactions_df["time"] = pd.to_datetime(transactions_df["time"])
