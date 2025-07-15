@@ -501,7 +501,7 @@ def manual_currency_converter(amount, from_currency, to_currency):
 
 # Streamlit App
 def main():
-    st.set_page_config(page_title="TradeSense", layout="wide")
+    st.set_page_config(page_title="Tradify", layout="wide")
     
     # Custom CSS for animations, spacing, and glassmorphism
     st.markdown("""
@@ -586,7 +586,7 @@ def main():
     # Title and description
     st.markdown("""
         <div class="center-text">
-            <h1>💹TradeSense 🤖</h1>
+            <h1>💹Tradify 🤖</h1>
              <h3>Trade With Sense | Grow With Confidence </h3>
             <p style="font-size: 18px;">
                 🔍 Analyze Any Stock</p>
